@@ -4,16 +4,25 @@
 「まなぶ（概念学習）」と「れんしゅう（演習）」の2モード＋マスタリーラーニングを中核に、
 全30単元（小1×12 / 小2×18）をカバーします。
 
-🔗 **公開URL:** https://sansuu-land.vercel.app （どのデバイスのブラウザからでもアクセス可）
+🔗 **公開URL(Vercel):** https://sansuu-land.vercel.app
+🔗 **公開URL(GitHub Pages):** https://uitarosen.github.io/sansuu-land/
 📦 **リポジトリ:** https://github.com/Uitarosen/sansuu-land
+
+どちらも、どのデバイスのブラウザからでもアクセス可能です。
 
 ## デプロイ(更新の反映方法)
 
-GitHubリポジトリとVercelプロジェクトは別アカウント連携のため、pushしても自動デプロイはされません。
-コード変更後、公開URLに反映するには手動で以下を実行してください。
+どちらも push だけでは自動デプロイされないため、コード変更後は手動で再デプロイしてください。
 
+**Vercel:**
 ```bash
 npx vercel --prod --yes
+```
+
+**GitHub Pages:**(`gh-pages`ブランチに `base=/sansuu-land/` でビルドした静的ファイルを配信)
+```bash
+npm run build -- --base=/sansuu-land/
+# dist/ の中身を gh-pages ブランチのルートに反映して push
 ```
 
 ## 使い方
