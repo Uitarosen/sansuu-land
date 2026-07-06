@@ -9,6 +9,9 @@ import ClockFace from '../figures/ClockFace.jsx'
 import TapeFigure from '../figures/TapeFigure.jsx'
 import GraphFigure from '../figures/GraphFigure.jsx'
 import FractionSVG from '../figures/FractionSVG.jsx'
+import TenFrameFigure from '../figures/TenFrameFigure.jsx'
+import MakeTenFigure from '../figures/MakeTenFigure.jsx'
+import ClockSetBoard from '../figures/ClockSetBoard.jsx'
 
 // 問題1問の表示と回答UI。型に応じてヘッダー図とテンキー/選択を出し分ける。
 export default function ProblemView({ problem, onCommit, feedback, locked, furigana = true, clearSignal = 0 }) {
@@ -29,7 +32,11 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
       {/* 問題文 */}
       <div className="flex items-start gap-3 max-w-xl text-center">
         {showPrompt && (
-          <div className="text-3xl font-extrabold text-ink leading-relaxed whitespace-pre-line">
+          <div
+            className={`${
+              problem.prompt.length > 40 ? 'text-xl' : problem.prompt.length > 20 ? 'text-2xl' : 'text-3xl'
+            } font-extrabold text-ink leading-relaxed whitespace-pre-line`}
+          >
             <Furigana text={problem.prompt} furigana={furigana} />
           </div>
         )}
@@ -42,6 +49,10 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
         <KukuFigure a={data.a} b={data.b} product={data.product} blank={data.blank} input={input} />
       )}
       {type === 'clock' && <ClockFace hour={data.hour} minute={data.minute} />}
+      {type === 'makeTen' && <MakeTenFigure key={problem.id} a={data.a} b={data.b} />}
+      {type === 'choice' && data.figure?.kind === 'tenframe' && (
+        <TenFrameFigure n={data.figure.n} emoji={data.figure.emoji} />
+      )}
       {type === 'graph' && <GraphFigure items={data.items} />}
       {type === 'tape' && (
         <TapeFigure parts={data.parts} whole={data.whole} blankAt={data.blankAt} input={input} />
@@ -51,7 +62,9 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
       )}
 
       {/* 回答UI */}
-      {inputKind === 'choice' ? (
+      {type === 'clockSet' ? (
+        <ClockSetBoard key={problem.id} step={data.step} locked={locked} onCommit={onCommit} />
+      ) : inputKind === 'choice' ? (
         <ChoiceGrid
           choices={data.choices}
           kind={choiceKind}

@@ -8,8 +8,13 @@ import {
   addNumpad,
   subNumpad,
   clockRead,
+  clockSet,
   shapeTap,
   bigNumberSay,
+  makeTen,
+  threeTerm,
+  wordExpr,
+  wordAnswer,
 } from '../engine/generators.js'
 
 // 長さくらべ(1-9)用のインライン・テンプレ
@@ -111,7 +116,12 @@ export const grade1 = {
         Q('3 + 2 = □', [4, 5, 6], 5, '3から「4、5」と 2つ かぞえて すすんでみよう'),
         Q('4 + 0 = □', [0, 4, 5], 4, '0を たしても かずは かわらないよ'),
       ],
-      templates: [addNumpad({ min: 1, max: 5, sumMax: 10, difficulty: 1 }), addNumpad({ min: 1, max: 9, sumMax: 10, difficulty: 2 })],
+      templates: [
+        addNumpad({ min: 1, max: 5, sumMax: 10, difficulty: 1 }),
+        addNumpad({ min: 1, max: 9, sumMax: 10, difficulty: 2 }),
+        wordAnswer({ kinds: ['join', 'increase'], sumMax: 10, difficulty: 2 }),
+        wordExpr({ kinds: ['join', 'increase'], sumMax: 10, difficulty: 3 }),
+      ],
     },
     {
       id: '1-5',
@@ -127,7 +137,11 @@ export const grade1 = {
         Q('5 - 2 = □', [2, 3, 4], 3, '5こから 2こ かくしてみよう。のこりは いくつ?'),
         Q('りんご4こ みかん3こ。\nちがいは なんこ?', [1, 2, 3], 1, 'ならべて くらべよう。しきは 4-3 だよ'),
       ],
-      templates: [subNumpad({ min: 2, max: 10, difficulty: 1 })],
+      templates: [
+        subNumpad({ min: 2, max: 10, difficulty: 1 }),
+        wordAnswer({ kinds: ['remain', 'diff'], sumMax: 10, difficulty: 2 }),
+        wordExpr({ kinds: ['remain', 'diff'], sumMax: 10, difficulty: 3 }),
+      ],
     },
     {
       id: '1-6',
@@ -146,6 +160,27 @@ export const grade1 = {
       templates: [countTo(20), compareNum(20), bigNumberSay(20)],
     },
     {
+      id: '1-13',
+      title: '3つの かずの けいさん',
+      room: 'だんごの さんぼんみち',
+      emoji: '🍡',
+      color: 'cream',
+      prerequisiteUnitIds: ['1-4', '1-5'],
+      lessons: [
+        L('🐸🐸🐸 🐸🐸 🐸', '3つの かずも けいさんできる', 'バスに かえるが 3びき。バスていで 2ひき のって、つぎの バスていで 1ぴき のったよ。しきは 3+2+1。3つの かずも 1つの しきに できるんだ!'),
+        L('3+2+1 → 5+1', 'まえから じゅんばんに', 'けいさんは まえから じゅんばんに するのが きほん。まず 3+2=5。つぎに 5+1=6。2かいに わけて けいさんすれば、3つでも こわくないよ。'),
+        L('10-4-3', 'ひきざんも つづけて できる', 'あめが 10こ。4こ たべて、また 3こ たべたら? 10-4=6、6-3=3。のこりは 3こ! ひきざんも まえから じゅんばんに だよ。'),
+        L('5+5-3', 'たしざんと ひきざんの まざった しき', 'ふえたり へったり する おはなしは、+と -が まざった しきに なるよ。5+5-3なら、5+5=10、10-3=7。じゅんばんを まもれば だいじょうぶ!'),
+        Q('2 + 3 + 4 = □', [8, 9, 10], 9, 'まず 2+3=5。つぎに 5+4を けいさんしよう'),
+        Q('10 - 3 - 2 = □', [5, 6, 7], 5, 'まず 10-3=7。つぎに 7-2 だよ'),
+      ],
+      templates: [
+        threeTerm({ pattern: '++', difficulty: 1 }),
+        threeTerm({ pattern: '--', difficulty: 2 }),
+        threeTerm({ pattern: 'mix', difficulty: 3 }),
+      ],
+    },
+    {
       id: '1-7',
       title: 'たしざん (2)',
       room: 'ゼリーの もり',
@@ -160,7 +195,12 @@ export const grade1 = {
         Q('9 + 4 = □', [12, 13, 14], 13, '9に 1を たして 10。のこりの 3を たそう'),
         Q('7 + 6 = □', [12, 13, 14], 13, '7は あと 3で 10。6を「3と3」に わけよう'),
       ],
-      templates: [addNumpad({ min: 5, max: 9, sumMax: 18, difficulty: 2 }), addNumpad({ min: 6, max: 9, sumMax: 18, difficulty: 3 })],
+      templates: [
+        makeTen(),
+        addNumpad({ min: 5, max: 9, sumMax: 18, difficulty: 2, carry: true }),
+        addNumpad({ min: 2, max: 9, sumMax: 18, difficulty: 3, carry: true }),
+        wordAnswer({ kinds: ['join', 'increase'], carry: true, difficulty: 3 }),
+      ],
     },
     {
       id: '1-8',
@@ -177,7 +217,32 @@ export const grade1 = {
         Q('12 - 9 = □', [2, 3, 4], 3, '12を「10と2」に わけて、10から 9を ひこう'),
         Q('14 - 6 = □', [7, 8, 9], 8, '10-6=4。4と ばらの 4を あわせてね'),
       ],
-      templates: [subNumpad({ min: 11, max: 18, difficulty: 2 }), subNumpad({ min: 12, max: 18, difficulty: 3 })],
+      templates: [
+        subNumpad({ min: 11, max: 18, difficulty: 2, borrow: true }),
+        subNumpad({ min: 11, max: 18, difficulty: 3, borrow: true }),
+        wordAnswer({ kinds: ['remain', 'diff'], carry: true, difficulty: 3 }),
+      ],
+    },
+    {
+      id: '1-14',
+      title: 'たすのかな ひくのかな',
+      room: 'なぞとき ひろば',
+      emoji: '❓',
+      color: 'gold',
+      prerequisiteUnitIds: ['1-4', '1-5'],
+      lessons: [
+        L('❓', 'もんだいぶんの なぞとき', 'ぶんしょうの もんだいは、たしざんか ひきざんかを じぶんで きめる なぞときだよ。ヒントは もんだいの なかの「あいことば」。さがしてみよう!'),
+        L('🍎🍎 + 🍎🍎🍎', 'たしざんの あいことば', '「あわせて いくつ」「ぜんぶで いくつ」「ふえると いくつ」— これらは たしざんの あいことば。2つの かずが いっしょに なる おはなしだよ。'),
+        L('🍪🍪🍪 → 🍪', 'ひきざんの あいことば', '「のこりは いくつ」「ちがいは いくつ」「どちらが おおい」— これらは ひきざんの あいことば。へったり くらべたり する おはなしだよ。'),
+        L('✍️', 'しきに してから こたえる', 'もんだいを よんだら ①あいことばを さがす ②しきを つくる ③けいさんする、の じゅんばんで とこう。しきが つくれたら もう かったも どうぜん!'),
+        Q('りんごが 4こ、みかんが 3こ。\n「あわせて なんこ?」の しきは?', ['4 + 3', '4 - 3'], '4 + 3', '「あわせて」は たしざんの あいことば だよ'),
+        Q('あめが 8こ。3こ たべた。\n「のこりは?」の しきは?', ['8 + 3', '8 - 3', '3 - 8'], '8 - 3', '「のこり」は ひきざんの あいことば だよ'),
+      ],
+      templates: [
+        wordExpr({ sumMax: 10, difficulty: 1 }),
+        wordAnswer({ sumMax: 10, difficulty: 2 }),
+        wordAnswer({ carry: true, difficulty: 3 }),
+      ],
     },
     {
       id: '1-9',
@@ -207,7 +272,7 @@ export const grade1 = {
         L('🕞', '「なんじはん」の よみかた', 'ながい はりが 6(いちばん した)まで すすんだら「はん(30ぷん)」。みじかい はりが 3と 4の あいだに あったら「3じはん」だよ。'),
         Q('ながい はりが 12、\nみじかい はりが 7。なんじ?', ['7じ', '12じ', '6じ'], '7じ', 'みじかい はりの かずを よもう'),
       ],
-      templates: [clockRead({ half: true })],
+      templates: [clockRead({ half: true }), clockSet({ half: true })],
     },
     {
       id: '1-11',

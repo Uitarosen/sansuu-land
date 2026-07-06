@@ -10,11 +10,14 @@ import {
   compareNum,
   clockRead,
   clockElapsed,
-  threeAdd,
+  clockSet,
+  threeTerm,
   shapeTap,
   kuku,
   tapeDiagram,
   fraction,
+  wordExpr,
+  wordAnswer,
 } from '../engine/generators.js'
 import { pick, shuffle, distractors } from '../engine/rng.js'
 
@@ -182,7 +185,7 @@ export const grade2 = {
         Q('ながい はりが 4を さすと 何分?', ['4分', '20分', '40分'], '20分', '数字×5だよ。4×5は いくつ?'),
         Q('2時50分の 20分あとは?', ['2時70分', '3時10分', '3時30分'], '3時10分', '50分+20分=70分。60分を こえたら「時」が 1つ すすむよ'),
       ],
-      templates: [clockRead({ minutes: true }), clockElapsed()],
+      templates: [clockRead({ minutes: true }), clockSet({ minutes: true }), clockElapsed()],
     },
     {
       id: '2-8',
@@ -199,7 +202,10 @@ export const grade2 = {
         Q('6 + 9 + 4 = □', [18, 19, 20], 19, '6と 4で 10! さきに たしてから 9を たそう'),
         Q('さきに けいさんするのは どこ?\n5+(3+7)', ['5+3', '3+7'], '3+7', '( )の 中が いちばん さき、が やくそくだよ'),
       ],
-      templates: [threeAdd()],
+      templates: [
+        threeTerm({ pattern: '++', tenFriendly: true, difficulty: 2 }),
+        threeTerm({ pattern: 'mix', difficulty: 3 }),
+      ],
     },
     {
       id: '2-9',
@@ -348,7 +354,12 @@ export const grade2 = {
         L('🧩', 'わからない ところは □', 'テープ図では、わからない 数を □に するよ。□が ぜんたいなら たし算、□が ぶぶんなら ひき算。図を かけば、しきが みえてくる!'),
         Q('あわせて 12こ。かた方が 5こなら\nもう かた方は?', [6, 7, 8], 7, 'ぜんたいが 12。□は ぶぶんだから 12-5の ひき算だよ'),
       ],
-      templates: [tapeDiagram({ op: '+' }), tapeDiagram({ op: '-' })],
+      templates: [
+        tapeDiagram({ op: '+' }),
+        tapeDiagram({ op: '-' }),
+        wordExpr({ sumMax: 18, difficulty: 2 }),
+        wordAnswer({ carry: true, difficulty: 3 }),
+      ],
     },
     {
       id: '2-17',
