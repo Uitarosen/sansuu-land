@@ -21,6 +21,12 @@ import GridArea from '../figures/GridArea.jsx'
 import Protractor from '../figures/Protractor.jsx'
 import LongDivisionFigure from '../figures/LongDivisionFigure.jsx'
 import UnfoldedBox from '../figures/UnfoldedBox.jsx'
+import VolumeTank from '../figures/VolumeTank.jsx'
+import FractionBar from '../figures/FractionBar.jsx'
+import RatioMeter from '../figures/RatioMeter.jsx'
+import PieBandGraph from '../figures/PieBandGraph.jsx'
+import DoubleNumberLine from '../figures/DoubleNumberLine.jsx'
+import AreaTransform from '../figures/AreaTransform.jsx'
 
 // 問題1問の表示と回答UI。型に応じてヘッダー図とテンキー/選択を出し分ける。
 export default function ProblemView({ problem, onCommit, feedback, locked, furigana = true, clearSignal = 0 }) {
@@ -36,10 +42,10 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
   // 回答UIの決定: 特殊操作 → 複数欄 → 選択 → テンキー
   let answerUI
   if (type === 'clockSet') {
-    answerUI = <ClockSetBoard key={problem.id} step={data.step} locked={locked} onCommit={onCommit} />
+    answerUI = <ClockSetBoard key={`${problem.id}-clock`} step={data.step} locked={locked} onCommit={onCommit} />
   } else if (data.inputMode) {
     answerUI = (
-      <MultiFieldPad key={problem.id} layout={data.inputMode} disabled={locked} clearSignal={clearSignal} onCommit={onCommit} />
+      <MultiFieldPad key={`${problem.id}-pad`} layout={data.inputMode} disabled={locked} clearSignal={clearSignal} onCommit={onCommit} />
     )
   } else if (Array.isArray(data.choices)) {
     answerUI = (
@@ -101,6 +107,12 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
       {type === 'protractor' && <Protractor angle={data.angle} />}
       {type === 'longDivision' && <LongDivisionFigure dividend={data.dividend} divisor={data.divisor} input={input} />}
       {type === 'unfoldedBox' && <UnfoldedBox cells={data.cells} />}
+      {type === 'volume' && <VolumeTank w={data.w} d={data.d} h={data.h} />}
+      {type === 'fractionBar' && <FractionBar key={problem.id} fractions={data.fractions} />}
+      {type === 'ratio' && <RatioMeter base={data.base} compare={data.compare} unit={data.unit} />}
+      {type === 'pieBand' && <PieBandGraph segments={data.segments} shape={data.shape} />}
+      {type === 'doubleLine' && <DoubleNumberLine top={data.top} bottom={data.bottom} unknownAt={data.unknownAt} />}
+      {type === 'areaTransform' && <AreaTransform key={problem.id} base={data.base} height={data.height} slant={data.slant} shape={data.shape} />}
       {type === 'graph' && <GraphFigure items={data.items} />}
       {type === 'tape' && (
         <TapeFigure parts={data.parts} whole={data.whole} blankAt={data.blankAt} input={input} />
