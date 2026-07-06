@@ -16,6 +16,11 @@ import ClockSetBoard from '../figures/ClockSetBoard.jsx'
 import ShareBoard from '../figures/ShareBoard.jsx'
 import NumberLineFigure from '../figures/NumberLineFigure.jsx'
 import ScaleFigure from '../figures/ScaleFigure.jsx'
+import LineGraphFigure from '../figures/LineGraphFigure.jsx'
+import GridArea from '../figures/GridArea.jsx'
+import Protractor from '../figures/Protractor.jsx'
+import LongDivisionFigure from '../figures/LongDivisionFigure.jsx'
+import UnfoldedBox from '../figures/UnfoldedBox.jsx'
 
 // 問題1問の表示と回答UI。型に応じてヘッダー図とテンキー/選択を出し分ける。
 export default function ProblemView({ problem, onCommit, feedback, locked, furigana = true, clearSignal = 0 }) {
@@ -24,7 +29,7 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
   useEffect(() => setInput(''), [problem.id, clearSignal])
 
   const { type, data } = problem
-  const showPrompt = type !== 'hissan' && type !== 'kuku'
+  const showPrompt = type !== 'hissan' && type !== 'kuku' && type !== 'longDivision'
   const choiceKind = type === 'shapeTap' ? 'shape' : data.emoji ? 'emoji' : 'text'
   const maxLen = Math.max(4, String(problem.answer).length + 1)
 
@@ -91,6 +96,11 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
         <NumberLineFigure min={data.min} max={data.max} step={data.step} mark={data.mark} labelEvery={data.labelEvery} />
       )}
       {type === 'scale' && <ScaleFigure value={data.value} max={data.max} unit={data.unit} />}
+      {type === 'lineGraph' && <LineGraphFigure points={data.points} unit={data.unit} />}
+      {type === 'gridArea' && <GridArea key={problem.id} w={data.w} h={data.h} />}
+      {type === 'protractor' && <Protractor angle={data.angle} />}
+      {type === 'longDivision' && <LongDivisionFigure dividend={data.dividend} divisor={data.divisor} input={input} />}
+      {type === 'unfoldedBox' && <UnfoldedBox cells={data.cells} />}
       {type === 'graph' && <GraphFigure items={data.items} />}
       {type === 'tape' && (
         <TapeFigure parts={data.parts} whole={data.whole} blankAt={data.blankAt} input={input} />

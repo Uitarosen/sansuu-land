@@ -8,17 +8,29 @@ import { checkAnswer, fractionValue } from './session.js'
 
 const N = 300
 
-// "3 + 2 - 1 = □" 形式の式を左から順に評価する(小学校の計算順)
+// "3 + 2 - 1 = □" 形式の式を評価する。
+// ×を含む式は優先順位(×を先に)で評価し、+/-のみの式は左から順に評価して途中結果も返す。
 function evalPrompt(prompt) {
   const m = prompt.match(/^(\d+(?: [+\-×] \d+)+) = □$/)
   if (!m) return null
   const tokens = m[1].split(' ')
+  if (tokens.includes('×')) {
+    // まず × をたたむ
+    const reduced = [tokens[0]]
+    for (let i = 1; i < tokens.length; i += 2) {
+      const op = tokens[i]
+      const v = Number(tokens[i + 1])
+      if (op === '×') reduced[reduced.length - 1] = Number(reduced[reduced.length - 1]) * v
+      else reduced.push(op, v)
+    }
+    let acc = Number(reduced[0])
+    for (let i = 1; i < reduced.length; i += 2) acc = reduced[i] === '+' ? acc + Number(reduced[i + 1]) : acc - Number(reduced[i + 1])
+    return { result: acc, steps: null }
+  }
   let acc = Number(tokens[0])
   const steps = [acc]
   for (let i = 1; i < tokens.length; i += 2) {
-    const op = tokens[i]
-    const v = Number(tokens[i + 1])
-    acc = op === '+' ? acc + v : op === '-' ? acc - v : acc * v
+    acc = tokens[i] === '+' ? acc + Number(tokens[i + 1]) : acc - Number(tokens[i + 1])
     steps.push(acc)
   }
   return { result: acc, steps }
@@ -52,11 +64,11 @@ describe('全単元テンプレートの生成妥当性', () => {
                 expect(Number.isInteger(p.answer.num) && p.answer.den > 0, `${unit.id} 分数不正: ${p.prompt}`).toBe(true)
               }
             }
-            // 式問題:左から評価した結果が答えと一致し、途中結果が負にならない
+            // 式問題:評価結果が答えと一致し、(+/-の式は)途中結果が負にならない
             const ev = evalPrompt(p.prompt)
             if (ev && typeof p.answer === 'number') {
               expect(ev.result, `${unit.id} 式と答えの不一致: ${p.prompt} → ${p.answer}`).toBe(p.answer)
-              for (const s of ev.steps) expect(s, `${unit.id} 途中で負: ${p.prompt}`).toBeGreaterThanOrEqual(0)
+              if (ev.steps) for (const s of ev.steps) expect(s, `${unit.id} 途中で負: ${p.prompt}`).toBeGreaterThanOrEqual(0)
             }
           }
         }
