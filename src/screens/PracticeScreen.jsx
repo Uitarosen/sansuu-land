@@ -86,6 +86,7 @@ export default function PracticeScreen({ nav, route }) {
       total: TOTAL,
       starsEarned: finalStars,
       reviewUnit: reviewUnit ? { gradeId: reviewUnit.grade.id, unitId: reviewUnit.unit.id, title: reviewUnit.unit.title } : null,
+      graduation: unit.graduation && finalCorrect >= 7,
     })
   }
 

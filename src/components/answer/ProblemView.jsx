@@ -27,6 +27,10 @@ import RatioMeter from '../figures/RatioMeter.jsx'
 import PieBandGraph from '../figures/PieBandGraph.jsx'
 import DoubleNumberLine from '../figures/DoubleNumberLine.jsx'
 import AreaTransform from '../figures/AreaTransform.jsx'
+import SymmetrySheet from '../figures/SymmetrySheet.jsx'
+import PlotBoard from '../figures/PlotBoard.jsx'
+import TreeDiagram from '../figures/TreeDiagram.jsx'
+import DotPlot from '../figures/DotPlot.jsx'
 
 // 問題1問の表示と回答UI。型に応じてヘッダー図とテンキー/選択を出し分ける。
 export default function ProblemView({ problem, onCommit, feedback, locked, furigana = true, clearSignal = 0 }) {
@@ -43,6 +47,19 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
   let answerUI
   if (type === 'clockSet') {
     answerUI = <ClockSetBoard key={`${problem.id}-clock`} step={data.step} locked={locked} onCommit={onCommit} />
+  } else if (type === 'symmetry') {
+    answerUI = (
+      <SymmetrySheet
+        key={`${problem.id}-sym`}
+        cols={data.cols}
+        rows={data.rows}
+        point={data.point}
+        axisCol={data.axisCol}
+        center={data.center}
+        locked={locked}
+        onCommit={onCommit}
+      />
+    )
   } else if (data.inputMode) {
     answerUI = (
       <MultiFieldPad key={`${problem.id}-pad`} layout={data.inputMode} disabled={locked} clearSignal={clearSignal} onCommit={onCommit} />
@@ -113,6 +130,9 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
       {type === 'pieBand' && <PieBandGraph segments={data.segments} shape={data.shape} />}
       {type === 'doubleLine' && <DoubleNumberLine top={data.top} bottom={data.bottom} unknownAt={data.unknownAt} />}
       {type === 'areaTransform' && <AreaTransform key={problem.id} base={data.base} height={data.height} slant={data.slant} shape={data.shape} />}
+      {type === 'plot' && <PlotBoard points={data.points} maxX={data.maxX} maxY={data.maxY} />}
+      {type === 'tree' && <TreeDiagram items={data.items} />}
+      {type === 'dotPlot' && <DotPlot values={data.values} min={data.min} max={data.max} />}
       {type === 'graph' && <GraphFigure items={data.items} />}
       {type === 'tape' && (
         <TapeFigure parts={data.parts} whole={data.whole} blankAt={data.blankAt} input={input} />

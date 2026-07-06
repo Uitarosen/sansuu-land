@@ -3,9 +3,10 @@ import { grade2 } from './grade2.js'
 import { grade3 } from './grade3.js'
 import { grade4 } from './grade4.js'
 import { grade5 } from './grade5.js'
+import { grade6 } from './grade6.js'
 
-export const grades = { grade1, grade2, grade3, grade4, grade5 }
-export const gradeList = [grade1, grade2, grade3, grade4, grade5]
+export const grades = { grade1, grade2, grade3, grade4, grade5, grade6 }
+export const gradeList = [grade1, grade2, grade3, grade4, grade5, grade6]
 
 export function getGrade(id) {
   return grades[id]

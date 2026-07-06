@@ -4,6 +4,7 @@ import { describe, it, expect } from 'vitest'
 import { gradeList } from '../data/index.js'
 import { subNumpad, addNumpad, makeTen, threeTerm, wordExpr, wordAnswer, clockSet, graphRead, yomi } from './generators.js'
 import { divideRemainder, divideShare, divideNumpad, fractionSameDenom } from './generators3.js'
+import { fractionMul, fractionDiv, countCases, symmetryFind } from './generators6.js'
 import { checkAnswer, fractionValue } from './session.js'
 
 const N = 300
@@ -228,5 +229,54 @@ describe('3年 わり算・小数・分数の制約', () => {
     expect(checkAnswer({ answer: 0.3 }, '0.30')).toBe(true)
     expect(checkAnswer({ answer: 0.3 }, '0.3')).toBe(true)
     expect(checkAnswer({ answer: 12 }, '12')).toBe(true)
+  })
+})
+
+describe('6年 分数乗除・場合の数・対称の制約', () => {
+  it('分数×÷は値が正しく、答えは分数オブジェクト', () => {
+    for (const t of [fractionMul(), fractionDiv()]) {
+      for (let i = 0; i < N; i++) {
+        const p = t.make()
+        expect(p.answer.den).toBeGreaterThan(0)
+        expect(p.answer.num).toBeGreaterThan(0)
+        expect(fractionValue(p.answer)).toBeGreaterThan(0)
+      }
+    }
+  })
+  it('分数×は分子積/分母積、÷は逆数をかけた値に一致', () => {
+    const mul = fractionMul()
+    for (let i = 0; i < N; i++) {
+      const p = mul.make()
+      const m = p.prompt.match(/(\d+)\/(\d+) × (\d+)\/(\d+)/)
+      const [, a, b, c, d] = m.map(Number)
+      expect(Math.abs(fractionValue(p.answer) - (a * c) / (b * d))).toBeLessThan(1e-9)
+    }
+    const div = fractionDiv()
+    for (let i = 0; i < N; i++) {
+      const p = div.make()
+      const m = p.prompt.match(/(\d+)\/(\d+) ÷ (\d+)\/(\d+)/)
+      const [, a, b, c, d] = m.map(Number)
+      expect(Math.abs(fractionValue(p.answer) - (a * d) / (b * c))).toBeLessThan(1e-9)
+    }
+  })
+  it('場合の数: 並べ方=n(n-1)、組み合わせ=その半分', () => {
+    const t = countCases()
+    for (let i = 0; i < N; i++) {
+      const p = t.make()
+      const n = p.data.items.length
+      const ordered = p.prompt.includes('並べる')
+      expect(p.answer).toBe(ordered ? n * (n - 1) : (n * (n - 1)) / 2)
+    }
+  })
+  it('対称: 対応点は軸に対して左右対称の位置(同じ行)', () => {
+    const t = symmetryFind()
+    for (let i = 0; i < N; i++) {
+      const p = t.make()
+      const [r, c] = p.answer.split(',').map(Number)
+      const [pr, pc] = p.data.point
+      expect(r).toBe(pr)
+      expect(Math.abs(c - p.data.axisCol)).toBe(Math.abs(pc - p.data.axisCol))
+      expect(c).not.toBe(pc)
+    }
   })
 })

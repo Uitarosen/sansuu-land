@@ -8,14 +8,44 @@ import Button from '../components/common/Button.jsx'
 
 // リザルト画面(§5 画面8)
 export default function ResultScreen({ nav, route }) {
-  const { gradeId, unitId, unitTitle, correctTotal, total, starsEarned, reviewUnit, companion } = route
+  const { gradeId, unitId, unitTitle, correctTotal, total, starsEarned, reviewUnit, companion, graduation } = route
   const mastered = useStore((s) => s.unitProgress[unitId]?.mastered)
   const score = useStore((s) => s.unitProgress[unitId]?.masteryScore ?? 0)
+  const stars = useStore((s) => s.stars)
   const good = correctTotal >= total * 0.7
 
   useEffect(() => {
     sfx.fanfare()
   }, [])
+
+  // 卒業エンディング(6-13 を 好成績で クリア)
+  if (graduation) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-5 p-6 text-center">
+        <Confetti count={60} />
+        <div className="text-6xl">🌏🚀✨</div>
+        <div className="text-5xl">🐰🎀 🐱 🤖 🐧 🦉 🐱‍🚀</div>
+        <h2 className="text-4xl font-extrabold text-pink">そつぎょう おめでとう!</h2>
+        <p className="text-lg font-bold text-ink/70 max-w-sm leading-relaxed">
+          6年間の さんすうを ぜんぶ やりとげて、ぶじ 地球に 帰りついたよ。<br />
+          きみは もう さんすうマスターだ! ✨
+        </p>
+        <div className="bg-white/85 rounded-pop shadow-soft p-6 w-full max-w-sm grid gap-3">
+          <Row label="さいごの せいかい" value={`${correctTotal} / ${total} もん`} />
+          <Row label="ためた スター" value={`⭐ ${stars}`} />
+          <Row label="そつぎょう証書" value="🎓 じゅよ!" />
+        </div>
+        <div className="flex gap-3 mt-2">
+          <Button variant="ghost" onClick={() => nav.home()}>
+            ホーム
+          </Button>
+          <Button onClick={() => nav.replace('practice', { gradeId, unitId })}>
+            もういちど ▶
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const message = mastered
     ? 'たんげん マスター! かんぺき!'
