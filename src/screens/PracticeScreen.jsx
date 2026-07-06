@@ -42,6 +42,10 @@ export default function PracticeScreen({ nav, route }) {
   const [banner, setBanner] = useState(null) // {kind, text}
   const [locked, setLocked] = useState(false)
   const timer = useRef(null)
+  // 集計はrefでも保持する(finishがsetTimeout経由で呼ばれるため、
+  // stateのクロージャだと最後の1問ぶんが反映されず1問少なく集計される)
+  const correctRef = useRef(0)
+  const starsRef = useRef(0)
 
   const problem = session[index]
   const TOTAL = session.length
@@ -60,9 +64,11 @@ export default function PracticeScreen({ nav, route }) {
 
   const finish = () => {
     const s = store.getState()
+    const finalCorrect = correctRef.current
+    const finalStars = starsRef.current
     // つまずき検知(§6.4 手順7):正解が少なく前提単元が弱いとき復習導線
     let reviewUnit = null
-    if (!s.unitProgress[unit.id]?.mastered && correctTotal < 6) {
+    if (!s.unitProgress[unit.id]?.mastered && finalCorrect < 6) {
       for (const pid of unit.prerequisiteUnitIds || []) {
         const pscore = s.unitProgress[pid]?.masteryScore ?? 0
         if (pscore < 70) {
@@ -76,9 +82,9 @@ export default function PracticeScreen({ nav, route }) {
       unitId: unit.id,
       unitTitle: unit.title,
       companion: gradeId === 'grade2',
-      correctTotal,
+      correctTotal: finalCorrect,
       total: TOTAL,
-      starsEarned,
+      starsEarned: finalStars,
       reviewUnit: reviewUnit ? { gradeId: reviewUnit.grade.id, unitId: reviewUnit.unit.id, title: reviewUnit.unit.title } : null,
     })
   }
@@ -92,8 +98,10 @@ export default function PracticeScreen({ nav, route }) {
       const newCombo = combo + 1
       const gained = 1 + (newCombo >= 3 ? 1 : 0)
       setCombo(newCombo)
-      setCorrectTotal((c) => c + 1)
-      setStarsEarned((s) => s + gained)
+      correctRef.current += 1
+      starsRef.current += gained
+      setCorrectTotal(correctRef.current)
+      setStarsEarned(starsRef.current)
       addStars(gained)
       recordAnswer({
         unitId: unit.id,
