@@ -3,6 +3,8 @@
 import { describe, it, expect } from 'vitest'
 import { gradeList } from '../data/index.js'
 import { subNumpad, addNumpad, makeTen, threeTerm, wordExpr, wordAnswer, clockSet, graphRead, yomi } from './generators.js'
+import { divideRemainder, divideShare, divideNumpad, fractionSameDenom } from './generators3.js'
+import { checkAnswer, fractionValue } from './session.js'
 
 const N = 300
 
@@ -33,15 +35,26 @@ describe('全単元テンプレートの生成妥当性', () => {
             expect(p.prompt, `${unit.id} prompt`).toBeTruthy()
             expect(p.answer, `${unit.id} answer (prompt: ${p.prompt})`).not.toBeUndefined()
             expect(p.answer).not.toBeNull()
-            // 選択肢:正解を含み、重複がない
+            // 選択肢:正解を含み、重複がない(オブジェクト答えの単元は選択肢を持たない)
             if (p.data?.choices) {
-              expect(p.data.choices, `${unit.id} choices に正解なし: ${p.prompt} → ${p.answer}`).toContain(p.answer)
-              expect(new Set(p.data.choices).size, `${unit.id} choices 重複: ${p.data.choices}`).toBe(p.data.choices.length)
+              const keys = p.data.choices.map((c) => (typeof c === 'object' ? JSON.stringify(c) : String(c)))
+              expect(keys, `${unit.id} choices に正解なし: ${p.prompt} → ${JSON.stringify(p.answer)}`).toContain(
+                typeof p.answer === 'object' ? JSON.stringify(p.answer) : String(p.answer),
+              )
+              expect(new Set(keys).size, `${unit.id} choices 重複: ${p.data.choices}`).toBe(keys.length)
               expect(p.data.choices.length).toBeGreaterThanOrEqual(2)
+            }
+            // オブジェクト答え(商あまり・分数)は必要フィールドが有効な数
+            if (p.answer && typeof p.answer === 'object') {
+              if ('q' in p.answer) {
+                expect(Number.isInteger(p.answer.q) && Number.isInteger(p.answer.r), `${unit.id} q/r 不正: ${p.prompt}`).toBe(true)
+              } else {
+                expect(Number.isInteger(p.answer.num) && p.answer.den > 0, `${unit.id} 分数不正: ${p.prompt}`).toBe(true)
+              }
             }
             // 式問題:左から評価した結果が答えと一致し、途中結果が負にならない
             const ev = evalPrompt(p.prompt)
-            if (ev) {
+            if (ev && typeof p.answer === 'number') {
               expect(ev.result, `${unit.id} 式と答えの不一致: ${p.prompt} → ${p.answer}`).toBe(p.answer)
               for (const s of ev.steps) expect(s, `${unit.id} 途中で負: ${p.prompt}`).toBeGreaterThanOrEqual(0)
             }
@@ -161,5 +174,47 @@ describe('とけい・グラフ・大きな数', () => {
     expect(yomi(3050)).toBe('さんぜん ごじゅう')
     expect(yomi(8000)).toBe('はっせん')
     expect(yomi(10000)).toBe('いちまん')
+  })
+})
+
+describe('3年 わり算・小数・分数の制約', () => {
+  it('あまりのあるわり算は 0 < あまり < わる数、わる数×商+あまり=わられる数', () => {
+    const t = divideRemainder()
+    for (let i = 0; i < N; i++) {
+      const p = t.make()
+      const [a, b] = p.prompt.match(/\d+/g).map(Number)
+      const { q, r } = p.answer
+      expect(r).toBeGreaterThan(0)
+      expect(r, `あまりがわる数以上: ${p.prompt}`).toBeLessThan(b)
+      expect(b * q + r).toBe(a)
+    }
+  })
+  it('わり算(操作/数式)はわりきれ、商が正しい', () => {
+    for (const t of [divideShare({ mode: 'equal' }), divideShare({ mode: 'group' }), divideNumpad({ max: 45 })]) {
+      for (let i = 0; i < N; i++) {
+        const p = t.make()
+        expect(Number.isInteger(p.answer)).toBe(true)
+        expect(p.answer).toBeGreaterThan(0)
+      }
+    }
+  })
+  it('同分母分数は分母不変・分子が正、答えは分数オブジェクト', () => {
+    const t = fractionSameDenom()
+    for (let i = 0; i < N; i++) {
+      const p = t.make()
+      expect(p.answer.den).toBeGreaterThan(1)
+      expect(p.answer.num).toBeGreaterThan(0)
+      expect(fractionValue(p.answer)).toBeGreaterThan(0)
+    }
+  })
+  it('checkAnswer は等価分数・商あまり・小数を正しく判定', () => {
+    expect(checkAnswer({ answer: { num: 3, den: 4 } }, { num: 6, den: 8 })).toBe(true)
+    expect(checkAnswer({ answer: { num: 3, den: 4 } }, { num: 3, den: 4 })).toBe(true)
+    expect(checkAnswer({ answer: { num: 3, den: 4 } }, { num: 2, den: 4 })).toBe(false)
+    expect(checkAnswer({ answer: { q: 3, r: 1 } }, { q: 3, r: 1 })).toBe(true)
+    expect(checkAnswer({ answer: { q: 3, r: 1 } }, { q: 3, r: 2 })).toBe(false)
+    expect(checkAnswer({ answer: 0.3 }, '0.30')).toBe(true)
+    expect(checkAnswer({ answer: 0.3 }, '0.3')).toBe(true)
+    expect(checkAnswer({ answer: 12 }, '12')).toBe(true)
   })
 })

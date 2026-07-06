@@ -5,7 +5,7 @@ import { useStore } from '../../store/useStore.js'
 // input は現在入力中のこたえ(文字列)。右づめで マスに はいる。
 export default function HissanFigure({ a, b, op, input = '' }) {
   const carryMemo = useStore((s) => s.settings.carryMemo)
-  const answer = op === '+' ? a + b : a - b
+  const answer = op === '+' ? a + b : op === '-' ? a - b : a * b
   const width = Math.max(String(a).length, String(b).length, String(answer).length) + (op === '+' ? 1 : 0)
   const [memo, setMemo] = useState({})
 

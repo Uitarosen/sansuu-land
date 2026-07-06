@@ -3,6 +3,7 @@ import Furigana from '../common/Furigana.jsx'
 import SpeakerButton from '../common/SpeakerButton.jsx'
 import ChoiceGrid from './ChoiceGrid.jsx'
 import Numpad from './Numpad.jsx'
+import MultiFieldPad from './MultiFieldPad.jsx'
 import HissanFigure from '../figures/HissanFigure.jsx'
 import KukuFigure from '../figures/KukuFigure.jsx'
 import ClockFace from '../figures/ClockFace.jsx'
@@ -12,6 +13,9 @@ import FractionSVG from '../figures/FractionSVG.jsx'
 import TenFrameFigure from '../figures/TenFrameFigure.jsx'
 import MakeTenFigure from '../figures/MakeTenFigure.jsx'
 import ClockSetBoard from '../figures/ClockSetBoard.jsx'
+import ShareBoard from '../figures/ShareBoard.jsx'
+import NumberLineFigure from '../figures/NumberLineFigure.jsx'
+import ScaleFigure from '../figures/ScaleFigure.jsx'
 
 // 問題1問の表示と回答UI。型に応じてヘッダー図とテンキー/選択を出し分ける。
 export default function ProblemView({ problem, onCommit, feedback, locked, furigana = true, clearSignal = 0 }) {
@@ -20,12 +24,42 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
   useEffect(() => setInput(''), [problem.id, clearSignal])
 
   const { type, data } = problem
-  const choiceLike = type === 'choice' || type === 'shapeTap' || type === 'clock' || (type === 'graph' && data.choiceMode)
-  const inputKind = choiceLike ? 'choice' : 'numpad'
   const showPrompt = type !== 'hissan' && type !== 'kuku'
-
   const choiceKind = type === 'shapeTap' ? 'shape' : data.emoji ? 'emoji' : 'text'
   const maxLen = Math.max(4, String(problem.answer).length + 1)
+
+  // 回答UIの決定: 特殊操作 → 複数欄 → 選択 → テンキー
+  let answerUI
+  if (type === 'clockSet') {
+    answerUI = <ClockSetBoard key={problem.id} step={data.step} locked={locked} onCommit={onCommit} />
+  } else if (data.inputMode) {
+    answerUI = (
+      <MultiFieldPad key={problem.id} layout={data.inputMode} disabled={locked} clearSignal={clearSignal} onCommit={onCommit} />
+    )
+  } else if (Array.isArray(data.choices)) {
+    answerUI = (
+      <ChoiceGrid
+        choices={data.choices}
+        kind={choiceKind}
+        disabled={locked}
+        picked={feedback?.picked}
+        correct={feedback?.showCorrect ? problem.answer : null}
+        onPick={(c) => onCommit(c)}
+      />
+    )
+  } else {
+    answerUI = (
+      <Numpad
+        value={input}
+        onChange={setInput}
+        onEnter={() => onCommit(data.numeric === false ? input : Number(input))}
+        suffix={data.suffix || ''}
+        disabled={locked}
+        maxLen={maxLen}
+        mode={data.numpadMode || 'int'}
+      />
+    )
+  }
 
   return (
     <div className="flex flex-col items-center gap-5 w-full">
@@ -50,39 +84,21 @@ export default function ProblemView({ problem, onCommit, feedback, locked, furig
       )}
       {type === 'clock' && <ClockFace hour={data.hour} minute={data.minute} />}
       {type === 'makeTen' && <MakeTenFigure key={problem.id} a={data.a} b={data.b} />}
-      {type === 'choice' && data.figure?.kind === 'tenframe' && (
-        <TenFrameFigure n={data.figure.n} emoji={data.figure.emoji} />
+      {type === 'divide' && (
+        <ShareBoard key={problem.id} total={data.total} divisor={data.divisor} mode={data.shareMode} emoji={data.emoji} />
       )}
+      {type === 'numberLine' && (
+        <NumberLineFigure min={data.min} max={data.max} step={data.step} mark={data.mark} labelEvery={data.labelEvery} />
+      )}
+      {type === 'scale' && <ScaleFigure value={data.value} max={data.max} unit={data.unit} />}
       {type === 'graph' && <GraphFigure items={data.items} />}
       {type === 'tape' && (
         <TapeFigure parts={data.parts} whole={data.whole} blankAt={data.blankAt} input={input} />
       )}
-      {type === 'choice' && data.figure?.kind === 'fraction' && (
-        <FractionSVG denom={data.figure.denom} filled={data.figure.filled} />
-      )}
+      {data.figure?.kind === 'tenframe' && <TenFrameFigure n={data.figure.n} emoji={data.figure.emoji} />}
+      {data.figure?.kind === 'fraction' && <FractionSVG denom={data.figure.denom} filled={data.figure.filled} />}
 
-      {/* 回答UI */}
-      {type === 'clockSet' ? (
-        <ClockSetBoard key={problem.id} step={data.step} locked={locked} onCommit={onCommit} />
-      ) : inputKind === 'choice' ? (
-        <ChoiceGrid
-          choices={data.choices}
-          kind={choiceKind}
-          disabled={locked}
-          picked={feedback?.picked}
-          correct={feedback?.showCorrect ? problem.answer : null}
-          onPick={(c) => onCommit(c)}
-        />
-      ) : (
-        <Numpad
-          value={input}
-          onChange={setInput}
-          onEnter={() => onCommit(Number(input))}
-          suffix={data.suffix || ''}
-          disabled={locked}
-          maxLen={maxLen}
-        />
-      )}
+      {answerUI}
     </div>
   )
 }

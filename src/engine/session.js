@@ -72,9 +72,59 @@ export function buildSession(unit, ctx, count = 10) {
   return problems
 }
 
+// 分数・帯分数の値(小数)を返す。無効なら null。
+// 対応: { num, den } / { whole, num, den } / "3/4" / "1 2/3"
+export function fractionValue(v) {
+  if (v == null) return null
+  if (typeof v === 'object') {
+    const whole = Number(v.whole || 0)
+    const num = Number(v.num)
+    const den = Number(v.den)
+    if (!Number.isFinite(num) || !Number.isFinite(den) || den === 0) return null
+    const sign = whole < 0 ? -1 : 1
+    return whole + sign * (num / den)
+  }
+  const s = String(v).trim()
+  const mixed = s.match(/^(-?\d+)\s+(\d+)\/(\d+)$/)
+  if (mixed) {
+    const w = Number(mixed[1])
+    return w + (w < 0 ? -1 : 1) * (Number(mixed[2]) / Number(mixed[3]))
+  }
+  const frac = s.match(/^(-?\d+)\/(\d+)$/)
+  if (frac) {
+    if (Number(frac[2]) === 0) return null
+    return Number(frac[1]) / Number(frac[2])
+  }
+  const num = Number(s)
+  return Number.isFinite(num) ? num : null
+}
+
+function gcd(a, b) {
+  while (b) [a, b] = [b, a % b]
+  return a
+}
+
+// これ以上約分できるか(約分をうながすバナー用)。given が分数オブジェクトのときのみ意味を持つ。
+export function canReduce(v) {
+  if (v == null || typeof v !== 'object' || v.num == null || v.den == null) return false
+  const g = gcd(Math.abs(Number(v.num)), Math.abs(Number(v.den)))
+  return g > 1 && Number(v.den) !== 0
+}
+
 // 回答チェック(型を吸収して比較)
 export function checkAnswer(problem, given) {
   const a = problem.answer
+  // 商とあまり: { q, r }
+  if (a && typeof a === 'object' && 'q' in a) {
+    return Number(given?.q) === Number(a.q) && Number(given?.r) === Number(a.r)
+  }
+  // 分数・帯分数: 値が一致すれば等価分数(6/8 と 3/4 など)も正解
+  if (a && typeof a === 'object') {
+    const av = fractionValue(a)
+    const gv = fractionValue(given)
+    return av != null && gv != null && Math.abs(av - gv) < 1e-9
+  }
+  // 数(小数含む): 0.30 と 0.3 は一致
   if (typeof a === 'number') return Number(given) === a
   return String(given) === String(a)
 }

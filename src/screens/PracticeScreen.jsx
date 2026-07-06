@@ -138,7 +138,7 @@ export default function PracticeScreen({ nav, route }) {
         const hint = problem.hints[a - 1] || problem.hints[0] || 'もんだいを ゆっくり よみなおしてみよう'
         setBanner({ kind: 'hint', text: `おしい! ヒント: ${hint}` })
         speak(`おしい。${hint}`)
-        setFeedback(problem.type === 'choice' || problem.type === 'shapeTap' || problem.type === 'clock' ? { picked: value } : null)
+        setFeedback(Array.isArray(problem.data?.choices) ? { picked: value } : null)
       }
     }
   }

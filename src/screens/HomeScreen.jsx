@@ -41,8 +41,8 @@ export default function HomeScreen({ nav }) {
         </div>
       </div>
 
-      {/* ワールド切替タブ */}
-      <div className="flex gap-2 px-4 mb-3">
+      {/* ワールド切替タブ(学年が増えても横スクロールで対応) */}
+      <div className="flex gap-2 px-4 mb-3 overflow-x-auto pb-1 -mx-0 snap-x">
         {gradeList.map((g) => (
           <button
             key={g.id}
@@ -50,7 +50,7 @@ export default function HomeScreen({ nav }) {
               sfx.tap()
               setTab(g.id)
             }}
-            className={`punipuni flex-1 h-12 rounded-full font-bold text-lg shadow-soft ${
+            className={`punipuni shrink-0 snap-start px-4 h-12 rounded-full font-bold text-lg shadow-soft ${
               tab === g.id ? 'bg-pink text-white' : 'bg-white/80 text-ink/70'
             }`}
           >
