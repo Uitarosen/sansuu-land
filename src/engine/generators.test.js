@@ -268,6 +268,46 @@ describe('6年 分数乗除・場合の数・対称の制約', () => {
       expect(p.answer).toBe(ordered ? n * (n - 1) : (n * (n - 1)) / 2)
     }
   })
+  it('レッスンページの構造が正しい(全学年)', () => {
+    // FigureView の REGISTRY と同期させること
+    const FIGURE_KINDS = [
+      'tenframe', 'clock', 'fraction', 'makeTen', 'share', 'numberLine', 'scale', 'protractor',
+      'gridArea', 'unfoldedBox', 'lineGraph', 'volume', 'fractionBar', 'ratio', 'pieBand',
+      'doubleLine', 'areaTransform', 'plot', 'tree', 'dotPlot',
+    ]
+    const balancedMarks = (t) => ((String(t).match(/\*/g) || []).length % 2 === 0)
+    for (const grade of gradeList) {
+      for (const unit of grade.units) {
+        if (unit.aikotoba !== undefined) {
+          expect(typeof unit.aikotoba, `${unit.id} aikotoba`).toBe('string')
+          expect(unit.aikotoba.length).toBeGreaterThan(0)
+        }
+        for (const page of unit.lessons ?? []) {
+          if (page.quiz) {
+            expect(page.quiz.prompt, `${unit.id} quiz prompt なし`).toBeTruthy()
+            expect(page.quiz.choices, `${unit.id} quizに正解なし: ${page.quiz.prompt}`).toContain(page.quiz.answer)
+            expect(new Set(page.quiz.choices).size, `${unit.id} quiz選択肢重複`).toBe(page.quiz.choices.length)
+          } else if (page.steps) {
+            expect(page.title, `${unit.id} steps タイトルなし`).toBeTruthy()
+            expect(page.steps.length, `${unit.id} stepsが少なすぎ`).toBeGreaterThanOrEqual(2)
+            for (const s of page.steps) {
+              expect(s.text, `${unit.id} step text なし`).toBeTruthy()
+              expect(balancedMarks(s.text), `${unit.id} 強調マーク不整合: ${s.text}`).toBe(true)
+            }
+          } else if (page.figure) {
+            expect(FIGURE_KINDS, `${unit.id} 未知のfigure kind: ${page.figure.kind}`).toContain(page.figure.kind)
+            expect(page.title, `${unit.id} figureページにタイトルなし`).toBeTruthy()
+            expect(page.text, `${unit.id} figureページに本文なし`).toBeTruthy()
+            expect(balancedMarks(page.text), `${unit.id} 強調マーク不整合`).toBe(true)
+          } else {
+            expect(page.title, `${unit.id} 通常ページにタイトルなし`).toBeTruthy()
+            expect(page.text, `${unit.id} 通常ページに本文なし`).toBeTruthy()
+            expect(balancedMarks(page.text), `${unit.id} 強調マーク不整合: ${page.text}`).toBe(true)
+          }
+        }
+      }
+    }
+  })
   it('対称: 対応点は軸に対して左右対称の位置(同じ行)', () => {
     const t = symmetryFind()
     for (let i = 0; i < N; i++) {

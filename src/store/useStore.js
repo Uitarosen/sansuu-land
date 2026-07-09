@@ -40,10 +40,11 @@ export const useStore = create(
   persist(
     (set, get) => ({
       // ---- 永続データ(UserProgress) ----
-      selectedGrade: null, // 'grade1' | 'grade2'
+      selectedGrade: null, // 'grade1' | 'grade2' | ...
       unitProgress: {},
       subSkillProgress: {}, // 九九の段別など
       wrongHistory: {},
+      lessonDone: {}, // 単元ID → レッスン完了(スターは初回のみ)
       stars: 0,
       ownedItems: ['ribbon-pink'],
       equippedItems: { hat: null, accessory: 'ribbon-pink' },
@@ -69,6 +70,9 @@ export const useStore = create(
         }),
 
       addStars: (n) => set((s) => ({ stars: s.stars + n })),
+
+      markLessonDone: (unitId) =>
+        set((s) => (s.lessonDone[unitId] ? {} : { lessonDone: { ...s.lessonDone, [unitId]: true } })),
 
       buyItem: (item) =>
         set((s) => {
@@ -114,6 +118,7 @@ export const useStore = create(
           unitProgress: {},
           subSkillProgress: {},
           wrongHistory: {},
+          lessonDone: {},
           stars: 0,
           ownedItems: ['ribbon-pink'],
           equippedItems: { hat: null, accessory: 'ribbon-pink' },
@@ -127,6 +132,7 @@ export const useStore = create(
         unitProgress: s.unitProgress,
         subSkillProgress: s.subSkillProgress,
         wrongHistory: s.wrongHistory,
+        lessonDone: s.lessonDone,
         stars: s.stars,
         ownedItems: s.ownedItems,
         equippedItems: s.equippedItems,

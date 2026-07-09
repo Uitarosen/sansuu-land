@@ -11,6 +11,7 @@ export default function ModeSelectScreen({ nav, route }) {
   const { gradeId, unitId } = route
   const unit = getUnit(gradeId, unitId)
   const progress = useStore((s) => s.unitProgress[unitId])
+  const lessonDone = useStore((s) => !!s.lessonDone[unitId])
   const score = progress?.masteryScore ?? 0
   const level = progress?.level ?? 1
 
@@ -40,8 +41,14 @@ export default function ModeSelectScreen({ nav, route }) {
         <div className="grid grid-cols-2 gap-4 w-full max-w-md mt-2">
           <button
             onClick={() => nav.go('lesson', { gradeId, unitId })}
-            className="punipuni rounded-pop shadow-soft bg-lavender/50 p-6 flex flex-col items-center gap-2"
+            className="punipuni relative rounded-pop shadow-soft bg-lavender/50 p-6 flex flex-col items-center gap-2"
           >
+            {!lessonDone && (
+              <span className="absolute -top-2 -right-2 bg-gold text-ink text-xs font-extrabold rounded-full px-2 py-1 shadow-pop animate-wiggle">
+                まずは ここから!
+              </span>
+            )}
+            {lessonDone && <span className="absolute -top-2 -right-2 text-xl">✅</span>}
             <span className="text-5xl">📖</span>
             <span className="text-2xl font-extrabold text-ink">まなぶ</span>
           </button>
