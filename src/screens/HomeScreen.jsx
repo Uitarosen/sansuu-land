@@ -78,6 +78,11 @@ export default function HomeScreen({ nav }) {
               className={`punipuni relative rounded-pop shadow-soft p-3 flex flex-col items-center gap-1 ${colorBg[u.color]}`}
             >
               <StatusBadge status={status} />
+              {u.challenge && (
+                <span className="absolute -top-2 -left-2 bg-pink text-white text-[10px] font-extrabold rounded-full px-2 py-0.5 shadow-pop">
+                  ⚡ちょうせん
+                </span>
+              )}
               <span className="text-4xl">{u.emoji}</span>
               <span className="text-base font-extrabold text-ink leading-tight text-center">
                 {u.title}

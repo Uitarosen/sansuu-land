@@ -58,7 +58,7 @@ export default function ResultScreen({ nav, route }) {
       {(good || mastered) && <Confetti count={mastered ? 40 : 24} />}
 
       <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>
-        <Character size="text-8xl" mood="happy" companion={companion} />
+        <Character size="text-8xl" mood="happy" companion={companion} stage />
       </motion.div>
 
       {mastered && <div className="text-6xl animate-wiggle">👑</div>}

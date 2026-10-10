@@ -35,8 +35,6 @@ function makeMixUnit() {
 export default function KukuScreen({ nav }) {
   const sub = useStore((s) => s.subSkillProgress)
   const owned = useStore((s) => s.ownedItems)
-  const setOwned = useStore((s) => s.buyItem)
-  const equip = useStore((s) => s.equipItem)
 
   const scoreOf = (dan) => sub[`kuku-dan-${dan}`]?.masteryScore ?? 0
   const masteredCount = dans.filter((d) => scoreOf(d) >= MASTER).length

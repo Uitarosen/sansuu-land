@@ -48,6 +48,11 @@ describe('全単元テンプレートの生成妥当性', () => {
             expect(p.prompt, `${unit.id} prompt`).toBeTruthy()
             expect(p.answer, `${unit.id} answer (prompt: ${p.prompt})`).not.toBeUndefined()
             expect(p.answer).not.toBeNull()
+            // 数値の答えは有限の0以上(テンキーはマイナスを入力できないので、負の答えは解けない問題になる)
+            if (typeof p.answer === 'number') {
+              expect(Number.isFinite(p.answer), `${unit.id} 答えが数でない: ${p.prompt}`).toBe(true)
+              expect(p.answer, `${unit.id} 答えが負: ${p.prompt} → ${p.answer}`).toBeGreaterThanOrEqual(0)
+            }
             // 選択肢:正解を含み、重複がない(オブジェクト答えの単元は選択肢を持たない)
             if (p.data?.choices) {
               const keys = p.data.choices.map((c) => (typeof c === 'object' ? JSON.stringify(c) : String(c)))

@@ -3,8 +3,12 @@
 // make() は問題インスタンス { prompt, speakText?, answer, data, hints, explain } を返す。
 import { rint, pick, shuffle, distractors } from './rng.js'
 
+// テンプレIDは「まちがい履歴」(wrongHistory)のキーとして端末に保存される。
+// 生成順の連番(t0, t1…)なので、途中にテンプレを足すと後ろのIDがずれて、保存済みの弱点が
+// べつの問題に付け替わってしまう。あとから足すテンプレには 固定ID(o.id)を渡すこと。
+// 固定IDを渡した場合は 連番を進めない(=既存テンプレのIDが変わらない)。
 let tid = 0
-const tmpl = (o) => ({ id: `t${tid++}`, hints: [], ...o })
+const tmpl = (o) => ({ id: o.id ?? `t${tid++}`, hints: [], ...o })
 const emojis = ['🍓', '🍎', '⭐', '🍪', '🧁', '🍬', '🌸', '🍒']
 
 // 正解+誤答候補から重複のない選択肢セットを作る(候補が足りなければ乱数で補完)
@@ -166,10 +170,11 @@ export const subNumpad = ({ min = 1, max = 10, difficulty = 1, borrow = false })
   })
 
 // いくつといくつ(合成・分解)
-export const decompose = (total) =>
+export const decompose = (total, difficulty = 1, id) =>
   tmpl({
+    ...(id ? { id } : {}), // 未指定のときは キーごと入れない(undefined で連番IDを上書きしないため)
     type: 'numpad',
-    difficulty: 1,
+    difficulty,
     make() {
       const a = rint(1, total - 1)
       return {
@@ -313,7 +318,8 @@ export const wordAnswer = ({ kinds = ['join', 'increase', 'remain', 'diff'], sum
 // ===== 3つのかずのけいさん =====
 // pattern: '++' | '+-' | '--' | '-+' | 'mix'
 // tenFriendly=true で「10がつくれるペア」を含む数を出す(計算のくふう用)
-export const threeTerm = ({ pattern = 'mix', tenFriendly = false, difficulty = 2 } = {}) =>
+// sumMax: 「ひいてから たす」型(-+)の答えの上限。小1の単元では 10 を渡して 10 までにおさめる。
+export const threeTerm = ({ pattern = 'mix', tenFriendly = false, difficulty = 2, sumMax = 18 } = {}) =>
   tmpl({
     type: 'numpad',
     difficulty,
@@ -342,7 +348,7 @@ export const threeTerm = ({ pattern = 'mix', tenFriendly = false, difficulty = 2
       } else {
         a = rint(5, 10)
         b = rint(1, a - 1)
-        c = rint(1, 8)
+        c = rint(1, Math.min(8, sumMax - (a - b)))
       }
       const op1 = p[0]
       const op2 = p[1]

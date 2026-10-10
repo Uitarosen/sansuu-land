@@ -20,7 +20,7 @@ export default function TitleScreen({ nav }) {
       </motion.h1>
       <p className="text-xl font-bold text-ink/70">たのしく さんすう おけいこ</p>
       <div className="animate-floaty">
-        <Character size="text-8xl" mood="idle" />
+        <Character size="text-8xl" mood="idle" stage />
       </div>
       <Button
         onClick={() => nav.go(grade ? 'home' : 'grade')}

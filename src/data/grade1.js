@@ -16,6 +16,17 @@ import {
   wordExpr,
   wordAnswer,
 } from '../engine/generators.js'
+import {
+  blankEq,
+  tensCalc,
+  skipCount,
+  neighborNum,
+  superlative3,
+  compareSums,
+  wordHard,
+  lineUpTotal,
+  decomposeThree,
+} from '../engine/generators1c.js'
 
 // 長さくらべ(1-9)用のインライン・テンプレ
 const longerCompare = {
@@ -71,7 +82,12 @@ export const grade1 = {
         L('1️⃣2️⃣3️⃣…🔟', 'かずの おおきさ', 'かずは 1、2、3…と 1ずつ おおきく なるよ。ならびの *うしろに ある かずほど おおきい*。5と 8なら、8の ほうが あとに くるから 8の ほうが おおきいね。'),
         Q('7と 5\nおおきいのは どっち?', [7, 5], 7, 'かぞえる とき あとに いう ほうが おおきいよ'),
       ],
-      templates: [countTo(10), compareNum(10)],
+      templates: [
+        countTo(10),
+        compareNum(10),
+        superlative3({ max: 10, difficulty: 2 }),
+        neighborNum({ max: 10, difficulty: 2 }),
+      ],
     },
     {
       id: '1-2',
@@ -87,7 +103,7 @@ export const grade1 = {
         Q('🍓🍇🍊🍎\nまえから 2ばんめは?', ['🍓', '🍇', '🍊'], '🍇', 'ひだりが「まえ」だよ。いち、に、と かぞえてね'),
         Q('🍓🍇🍊🍎\nうしろから 1ばんめは?', ['🍓', '🍊', '🍎'], '🍎', 'うしろから かぞえる ときは みぎから だよ'),
       ],
-      templates: [ordinal()],
+      templates: [ordinal(), lineUpTotal({ difficulty: 3, max: 10 })],
     },
     {
       id: '1-3',
@@ -96,14 +112,23 @@ export const grade1 = {
       emoji: '🍪',
       color: 'cream',
       prerequisiteUnitIds: ['1-1'],
+      aikotoba: 'あわせて 10に なる くみあわせを おぼえる',
       lessons: [
         L('🍪🍪 | 🍪🍪🍪', '5を わけてみよう', 'クッキー5こを 2つの おさらに わけるよ。「2こと 3こ」「1こと 4こ」…いろんな わけかたが あるね。どう わけても、あわせたら 5こに もどるよ。'),
         L('✋', 'ゆびで たしかめよう', 'ゆびを つかうと べんり! 5ほんの ゆびを 2ほんと 3ぼんに わけて みてごらん。「5は 2と 3」が めで みえるよ。'),
         L('🔟', '10の わけかたは たからもの', '10は「1と9」「2と8」「3と7」「4と6」「5と5」。この くみあわせを おぼえると、たしざんも ひきざんも ぐーんと はやく なるよ。まいにち となえて みよう!'),
         Q('5は 2と □', [2, 3, 4], 3, 'ゆびを 5ほん だして、2ほん おってみよう。のこりは?'),
         Q('10は 6と □', [3, 4, 5], 4, '6から 10まで あと いくつ かぞえるかな? 7、8、9、10…'),
+        L('🍪🍪🍪 | 🍪🍪 | 🍪🍪🍪🍪🍪', '3つに わけても おなじ', '10を 3つに わける ことも できるよ。10は 3と 2と 5。まず「3と 2」を あわせて 5。のこりは 10-5で 5。*3つを あわせたら かならず 10* に もどるよ。'),
+        Q('10は 3と 2と □', [4, 5, 6], 5, '3と 2を あわせると 5。10から 5を ひこう'),
       ],
-      templates: [decompose(5), decompose(10)],
+      templates: [
+        decompose(5),
+        decompose(10),
+        decompose(8, 2, 'g1-decomp-8-2'),
+        decompose(9, 2, 'g1-decomp-9-2'),
+        decomposeThree({ total: 10, difficulty: 3 }),
+      ],
     },
     {
       id: '1-4',
@@ -125,6 +150,7 @@ export const grade1 = {
         addNumpad({ min: 1, max: 9, sumMax: 10, difficulty: 2 }),
         wordAnswer({ kinds: ['join', 'increase'], sumMax: 10, difficulty: 2 }),
         wordExpr({ kinds: ['join', 'increase'], sumMax: 10, difficulty: 3 }),
+        blankEq({ ops: ['add'], max: 10, difficulty: 3 }),
       ],
     },
     {
@@ -145,6 +171,7 @@ export const grade1 = {
         subNumpad({ min: 2, max: 10, difficulty: 1 }),
         wordAnswer({ kinds: ['remain', 'diff'], sumMax: 10, difficulty: 2 }),
         wordExpr({ kinds: ['remain', 'diff'], sumMax: 10, difficulty: 3 }),
+        blankEq({ ops: ['sub'], max: 10, difficulty: 3 }),
       ],
     },
     {
@@ -161,9 +188,16 @@ export const grade1 = {
         Q('10と 7で いくつ?', [15, 17, 18], 17, '「じゅう」と「なな」を つなげて よんでみよう'),
         L('11 12 13 … 20', '11から 20まで', '11(じゅういち)、12(じゅうに)、13(じゅうさん)…19(じゅうきゅう)、そして 20(にじゅう)。20は 10の まとまりが 2つの かずだよ。'),
         L('📏 14…15…16…17', 'かずの せん', 'かずを じゅんばんに ならべた「かずのせん」では、*みぎに いくほど おおきい*よ。14と 17なら、17の ほうが みぎに あるから 17の かち!'),
+        L('2️⃣ 4️⃣ 6️⃣ 8️⃣', 'とびとびに かぞえよう', '2、4、6、8…と *2ずつ*、5、10、15…と *5ずつ* かぞえる ことも できるよ。となりの かずが *どれだけ かわるか* を みつけると、□に はいる かずが わかるよ。'),
         Q('この かずは?\n15', [14, 15, 16], 15, '10と 5で「じゅうご」だよ'),
       ],
-      templates: [countTo(20), compareNum(20), bigNumberSay(20)],
+      templates: [
+        countTo(20),
+        compareNum(20),
+        bigNumberSay(20),
+        neighborNum({ max: 20, difficulty: 2 }),
+        skipCount({ max: 20, steps: [2, 5], down: false, difficulty: 3 }),
+      ],
     },
     {
       id: '1-13',
@@ -183,7 +217,8 @@ export const grade1 = {
       templates: [
         threeTerm({ pattern: '++', difficulty: 1 }),
         threeTerm({ pattern: '--', difficulty: 2 }),
-        threeTerm({ pattern: 'mix', difficulty: 3 }),
+        threeTerm({ pattern: 'mix', difficulty: 3, sumMax: 10 }),
+        wordHard({ kinds: ['twoStep'], difficulty: 3, sumMax: 10 }),
       ],
     },
     {
@@ -212,6 +247,7 @@ export const grade1 = {
         addNumpad({ min: 5, max: 9, sumMax: 18, difficulty: 2, carry: true }),
         addNumpad({ min: 2, max: 9, sumMax: 18, difficulty: 3, carry: true }),
         wordAnswer({ kinds: ['join', 'increase'], carry: true, difficulty: 3 }),
+        blankEq({ ops: ['add'], carry: true, difficulty: 3 }),
       ],
     },
     {
@@ -238,6 +274,7 @@ export const grade1 = {
         subNumpad({ min: 11, max: 18, difficulty: 2, borrow: true }),
         subNumpad({ min: 11, max: 18, difficulty: 3, borrow: true }),
         wordAnswer({ kinds: ['remain', 'diff'], carry: true, difficulty: 3 }),
+        blankEq({ ops: ['sub'], carry: true, difficulty: 3 }),
       ],
     },
     {
@@ -259,6 +296,7 @@ export const grade1 = {
         wordExpr({ sumMax: 10, difficulty: 1 }),
         wordAnswer({ sumMax: 10, difficulty: 2 }),
         wordAnswer({ carry: true, difficulty: 3 }),
+        wordHard({ kinds: ['twoStep', 'reverse'], difficulty: 3 }),
       ],
     },
     {
@@ -327,7 +365,102 @@ export const grade1 = {
         Q('この かずは?\n48', [38, 48, 84], 48, '「よんじゅう はち」。十のくらいが 4だよ'),
         Q('10の たばが 6つと ばら 2こ。\nいくつ?', [26, 62, 66], 62, '十のくらいが 6、一のくらいが 2 だね'),
       ],
-      templates: [bigNumberSay(100), compareNum(100)],
+      templates: [
+        bigNumberSay(100),
+        compareNum(100),
+        superlative3({ max: 100, difficulty: 2 }),
+        neighborNum({ max: 100, difficulty: 2 }),
+        skipCount({ max: 100, difficulty: 3 }),
+      ],
+    },
+    // ---- ちょうせん単元(教科書の ひとつ上の発展。理解度に合わせて自由に挑戦) ----
+    {
+      id: '1-15',
+      title: '100までの かず ちょうせん',
+      room: 'わたあめの くも',
+      emoji: '☁️',
+      color: 'lilac',
+      challenge: true,
+      prerequisiteUnitIds: ['1-12'],
+      aikotoba: '10の たばと ばらに わけて けいさん',
+      lessons: [
+        L('3️⃣0️⃣ + 2️⃣0️⃣', '何十の たしざん', '30は 10の たばが 3つ、20は 10の たばが 2つ。あわせて 10の たばが *5つ*で *50*! 「*10の たばが いくつ*」で かんがえると かんたんだよ。'),
+        Q('30 + 20 = □', [40, 50, 60], 50, '10の たばが 3つと 2つ。あわせて いくつ?'),
+        S('2けたと 1けたの たしざん(23+4)', [
+          { art: '23 + 4', text: '23は「*10が 2つ*」と「*ばら 3こ*」' },
+          { art: '3 + 4 = 7', text: '*ばらどうし*(一のくらい)だけ たす。3+4=*7*' },
+          { art: '20 と 7', text: '10の たばは そのまま *20*。20と 7で…' },
+          { art: '23+4 = 27', text: 'こたえは *27*!' },
+        ]),
+        Q('45 + 3 = □', [47, 48, 75], 48, 'ばらの 5と 3を たそう。10の たばは そのまま'),
+        S('2けたと 1けたの ひきざん(38-5)', [
+          { art: '38 - 5', text: '38は「*10が 3つ*」と「*ばら 8こ*」' },
+          { art: '8 - 5 = 3', text: '*ばらどうし*だけ ひく。8-5=*3*' },
+          { art: '38-5 = 33', text: '10の たば 30と 3で *33*!' },
+        ]),
+        Q('36 - 4 = □', [32, 33, 40], 32, 'ばらの 6から 4を ひこう'),
+        S('2けた + 2けたも できる(34+25)', [
+          { art: '34 + 25', text: '*十のくらい*どうし、*一のくらい*どうしに わけるよ' },
+          { art: '30+20 / 4+5', text: '十のくらい 3+2=*5*(50)、一のくらい 4+5=*9*' },
+          { art: '50 + 9', text: 'あわせて *59*!' },
+        ]),
+        F({ kind: 'numberLine', min: 0, max: 20, step: 2, mark: 8, labelEvery: 1 }, 'かずの ならびの きまり', '2、4、6、8…と *2ずつ* ふえる ならびを「2とび」と いうよ。5とびは 5、10、15…、10とびは 10、20、30…。*どれだけ ずつ かわるか* を みつけよう。'),
+        Q('2、4、6、□\n□に はいる かずは?', [7, 8, 10], 8, '2ずつ ふえているよ'),
+      ],
+      templates: [
+        tensCalc({ kinds: ['tens'], difficulty: 1 }),
+        skipCount({ max: 20, steps: [2, 5], down: false, difficulty: 1 }),
+        neighborNum({ max: 100, difficulty: 1 }),
+        tensCalc({ kinds: ['oneDigit'], difficulty: 2 }),
+        superlative3({ max: 100, difficulty: 2 }),
+        skipCount({ max: 100, difficulty: 2 }),
+        tensCalc({ kinds: ['twoDigit'], difficulty: 3 }),
+      ],
+    },
+    {
+      id: '1-16',
+      title: 'けいさん ちょうせん',
+      room: 'なぞなぞ とうげ',
+      emoji: '🧩',
+      color: 'gold',
+      challenge: true,
+      prerequisiteUnitIds: ['1-7', '1-8'],
+      aikotoba: 'わからない かずは □に して かんがえる',
+      lessons: [
+        L('3 + □ = 8', '□に はいる かずを さがそう', 'わからない かずを □に した しきが あるよ。3+□=8 なら「3に なにを たすと 8?」。ひきざんで もとめられるよ。8-3=*5*!'),
+        S('□の もとめかた(□+4=9)', [
+          { art: '□ + 4 = 9', text: 'ぜんたいは *9*、わかっている かずは *4*' },
+          { art: '9 - 4', text: 'ぜんたいから わかっている かずを *ひく*' },
+          { art: '9-4 = 5', text: '□は *5*! たしかめ: 5+4=9 で あっているね' },
+        ]),
+        Q('□ + 4 = 9', [4, 5, 13], 5, '9から 4を ひこう'),
+        L('10 - □ = 6', 'ひきざんの □', '10-□=6 は「10から いくつ とると 6?」。10-6=*4*。ひいた かずを さがす ときも ひきざん!'),
+        Q('10 - □ = 6', [3, 4, 16], 4, '10-6 を けいさん'),
+        L('5+4 と 3+7', 'しきを くらべよう', 'まず それぞれの *こたえ*を だして から くらべるよ。5+4=*9*、3+7=*10*。だから 3+7の ほうが おおきい! こたえが おなじ ときも あるよ。'),
+        Q('5 + 4 と 3 + 7\nおおきいのは?', ['5 + 4', '3 + 7', 'おなじ'], '3 + 7', 'どちらも こたえを だしてから くらべよう'),
+        S('「はじめは いくつ?」(いちごを 3こ たべたら 4こ のこった)', [
+          { art: '□ - 3 = 4', text: 'はじめの かずを *□*と して しきに すると「□ - 3 = 4」' },
+          { art: '🍓🍓🍓🍓 + 🍓🍓🍓', text: 'たべた 3こを *もどして*みよう。のこった 4こに 3こを たす' },
+          { art: '4 + 3 = 7', text: '4+3=*7*。はじめは *7こ*!' },
+        ]),
+        Q('おかしを 2こ たべたら 5こ のこった。\nはじめは なんこ?', [3, 7, 10], 7, 'のこりに たべた ぶんを たそう。5+2'),
+        S('まえから 3ばんめ、うしろから 4ばんめ(なんにん?)', [
+          { art: '🧒🧒🧒', text: 'まえから 3ばんめ…まえに 2にん、じぶんで *3にん*' },
+          { art: '🧒🧒🧒🧒', text: 'うしろから 4ばんめ…うしろに 3にん、じぶんで *4にん*' },
+          { art: '3 + 4 = 7 ?', text: '3+4=7。でも *この 子を 2かい* かぞえちゃった!' },
+          { art: '7 - 1 = 6', text: '*1を ひいて* みんなで *6にん*!' },
+        ]),
+        Q('まえから 2ばんめ、うしろから 3ばんめ。\nみんなで なんにん?', [4, 5, 6], 4, '2+3=5。この 子を 2かい かぞえているから 1を ひくよ'),
+      ],
+      templates: [
+        blankEq({ ops: ['add'], max: 10, difficulty: 1 }),
+        blankEq({ ops: ['sub'], max: 10, difficulty: 2 }),
+        compareSums({ sumMax: 18, difficulty: 2 }),
+        wordHard({ kinds: ['reverse'], difficulty: 2 }),
+        blankEq({ ops: ['add', 'sub'], carry: true, difficulty: 3 }),
+        wordHard({ kinds: ['twoStep', 'reverse'], difficulty: 3 }),
+        lineUpTotal({ difficulty: 3 }),
+      ],
     },
   ],
 }

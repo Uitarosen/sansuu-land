@@ -62,8 +62,9 @@ export const evalExpr = () =>
     make() {
       const x = rint(2, 8)
       const a = rint(2, 5)
-      const b = rint(1, 9)
       const plus = Math.random() < 0.5
+      // ひき算のときは、答えが 0 以上になるよう ひく数を a×x より小さくする
+      const b = plus ? rint(1, 9) : rint(1, Math.min(9, a * x - 1))
       const ans = plus ? a * x + b : a * x - b
       return {
         prompt: `x = ${x}の とき\nx × ${a} ${plus ? '+' : '-'} ${b} = □`,

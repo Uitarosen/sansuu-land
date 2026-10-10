@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { todayKey } from '../lib/date.js'
+import { DEFAULT_EQUIPPED, itemById, isOwned } from '../data/items.js'
 
 // マスタリー閾値・スコア変動(§3.4 / §6.4)
 const CORRECT_BASE = 5
@@ -47,7 +48,7 @@ export const useStore = create(
       lessonDone: {}, // 単元ID → レッスン完了(スターは初回のみ)
       stars: 0,
       ownedItems: ['ribbon-pink'],
-      equippedItems: { hat: null, accessory: 'ribbon-pink' },
+      equippedItems: { ...DEFAULT_EQUIPPED },
       studyCalendar: [],
       settings: {
         sound: true,
@@ -74,14 +75,29 @@ export const useStore = create(
       markLessonDone: (unitId) =>
         set((s) => (s.lessonDone[unitId] ? {} : { lessonDone: { ...s.lessonDone, [unitId]: true } })),
 
-      buyItem: (item) =>
+      // スターで こうかん して、そのまま そうびする(買えないときは なにも しない)。
+      // 価格・枠は 呼び出し側の値を信用せず、データ(itemById)から引き直す。
+      purchaseItem: (item) =>
         set((s) => {
-          if (s.ownedItems.includes(item.id) || s.stars < item.price) return {}
-          return { stars: s.stars - item.price, ownedItems: [...s.ownedItems, item.id] }
+          const real = item ? itemById[item.id] : null
+          if (!real || real.special || s.ownedItems.includes(real.id) || s.stars < real.price) return {}
+          return {
+            stars: s.stars - real.price,
+            ownedItems: [...s.ownedItems, real.id],
+            equippedItems: { ...s.equippedItems, [real.slot]: real.id },
+          }
         }),
 
+      // もっているものだけ そうびできる。itemId=null で はずす(きゃらは はずせない)。
       equipItem: (slot, itemId) =>
-        set((s) => ({ equippedItems: { ...s.equippedItems, [slot]: itemId } })),
+        set((s) => {
+          if (itemId === null) {
+            return slot === 'avatar' ? {} : { equippedItems: { ...s.equippedItems, [slot]: null } }
+          }
+          const item = itemById[itemId]
+          if (!item || item.slot !== slot || !isOwned(s.ownedItems, item)) return {}
+          return { equippedItems: { ...s.equippedItems, [slot]: itemId } }
+        }),
 
       // 演習の1問回答を記録
       recordAnswer: ({ unitId, templateId, subSkill, correct, difficulty, combo }) =>
@@ -121,12 +137,23 @@ export const useStore = create(
           lessonDone: {},
           stars: 0,
           ownedItems: ['ribbon-pink'],
-          equippedItems: { hat: null, accessory: 'ribbon-pink' },
+          equippedItems: { ...DEFAULT_EQUIPPED },
           studyCalendar: [],
         }),
     }),
     {
       name: 'sansuu-land-progress-v2',
+      // 古い保存データ(equippedItems が hat/accessory だけ等)でも、新しい枠の初期値を補う。
+      // 既定のマージは浅いので、入れ子のオブジェクトだけ明示的に重ねる。
+      merge: (persisted, current) => {
+        const p = persisted ?? {}
+        return {
+          ...current,
+          ...p,
+          equippedItems: { ...DEFAULT_EQUIPPED, ...(p.equippedItems ?? {}) },
+          settings: { ...current.settings, ...(p.settings ?? {}) },
+        }
+      },
       partialize: (s) => ({
         selectedGrade: s.selectedGrade,
         unitProgress: s.unitProgress,
